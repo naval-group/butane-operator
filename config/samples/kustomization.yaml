@@ -1,0 +1,4 @@
+## Append samples of your project ##
+resources:
+- butane_v1alpha1_butaneconfig.yaml
+#+kubebuilder:scaffold:manifestskustomizesamples

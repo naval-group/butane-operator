@@ -1,0 +1,23 @@
+# permissions for end users to view butaneconfigs.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  labels:
+    app.kubernetes.io/name: butane-operator
+    app.kubernetes.io/managed-by: kustomize
+  name: butaneconfig-viewer-role
+rules:
+- apiGroups:
+  - butane.openshift.io
+  resources:
+  - butaneconfigs
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - butane.openshift.io
+  resources:
+  - butaneconfigs/status
+  verbs:
+  - get
