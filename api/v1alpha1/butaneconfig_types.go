@@ -20,12 +20,12 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-// ButaneConfigSpec définit les attributs souhaités pour ButaneConfig
+// ButaneConfigSpec defines the desired state of ButaneConfig
 type ButaneConfigSpec struct {
 	Config string `json:"config,omitempty"`
 }
 
-// ButaneConfigStatus définit le statut observé pour ButaneConfig
+// ButaneConfigStatus defines the observed state of ButaneConfig
 type ButaneConfigStatus struct {
 	SecretName string `json:"secretName,omitempty"`
 }
@@ -33,7 +33,7 @@ type ButaneConfigStatus struct {
 //+kubebuilder:object:root=true
 //+kubebuilder:subresource:status
 
-// ButaneConfig est le schéma de la ressource ButaneConfig API
+// ButaneConfig is the Schema for the butaneconfigs API
 type ButaneConfig struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
@@ -44,7 +44,7 @@ type ButaneConfig struct {
 
 //+kubebuilder:object:root=true
 
-// ButaneConfigList contient une liste de ButaneConfig
+// ButaneConfigList contains a list of ButaneConfig
 type ButaneConfigList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`
