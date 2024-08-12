@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package controllers
+package controller
 
 import (
 	"context"
@@ -24,21 +24,23 @@ import (
 	"github.com/coreos/butane/config"
 	"github.com/coreos/butane/config/common"
 	"github.com/go-logr/logr"
+	butanev1alpha1 "github.com/naval-group/butane-operator/api/v1alpha1"
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/client-go/tools/record"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
-	"sigs.k8s.io/controller-runtime/pkg/reconcile"
-	butanev1alpha1 "github.com/example/butane-operator/api/v1alpha1"
 )
 
 // ButaneConfigReconciler reconciles a ButaneConfig object
 type ButaneConfigReconciler struct {
 	client.Client
-	Log    logr.Logger
-	Scheme *runtime.Scheme
+	Log      logr.Logger
+	Scheme   *runtime.Scheme
+	Recorder record.EventRecorder
 }
 
 //+kubebuilder:rbac:groups=butane.openshift.io,resources=butaneconfigs,verbs=get;list;watch;create;update;patch;delete
@@ -49,7 +51,7 @@ type ButaneConfigReconciler struct {
 func (r *ButaneConfigReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	log := r.Log.WithValues("butaneconfig", req.NamespacedName)
 
-	// Récupérer l'objet ButaneConfig
+	// Fetch the ButaneConfig instance
 	var butaneConfig butanev1alpha1.ButaneConfig
 	if err := r.Get(ctx, req.NamespacedName, &butaneConfig); err != nil {
 		if apierrors.IsNotFound(err) {
@@ -57,21 +59,31 @@ func (r *ButaneConfigReconciler) Reconcile(ctx context.Context, req ctrl.Request
 		}
 		return ctrl.Result{}, err
 	}
+	r.Recorder.Event(&butaneConfig, corev1.EventTypeNormal, "ConfigRetrieved", "Successfully retrieved ButaneConfig")
 
-	// Convertir le ButaneConfig en Ignition config
-	ignitionConfig, rpt, err := config.TranslateBytes([]byte(butaneConfig.Spec.Config))
+	// Extract the raw Butane configuration from the runtime.RawExtension
+	rawConfig := butaneConfig.Spec.Config.Raw
+	if rawConfig == nil {
+		log.Error(nil, "ButaneConfig is missing a Config")
+		return ctrl.Result{}, fmt.Errorf("missing Config in ButaneConfig %s", butaneConfig.Name)
+	}
+
+	// Convert the ButaneConfig to an Ignition config
+	ignitionConfig, rpt, err := config.TranslateBytes(rawConfig, common.TranslateBytesOptions{})
 	if err != nil || rpt.IsFatal() {
-		log.Error(err, "Erreur lors de la conversion de ButaneConfig en Ignition config")
+		log.Error(err, "Error translating ButaneConfig to Ignition config")
+		r.Recorder.Event(&butaneConfig, corev1.EventTypeWarning, "ConversionFailed", "Failed to convert ButaneConfig to Ignition config")
 		return ctrl.Result{}, err
 	}
 
 	ignitionJSON, err := json.Marshal(ignitionConfig)
 	if err != nil {
-		log.Error(err, "Erreur lors de la génération du JSON Ignition")
+		log.Error(err, "Error marshaling Ignition config to JSON")
+		r.Recorder.Event(&butaneConfig, corev1.EventTypeWarning, "JSONMarshalFailed", "Failed to marshal Ignition config to JSON")
 		return ctrl.Result{}, err
 	}
 
-	// Créer ou mettre à jour le secret contenant la configuration Ignition
+	// Create or update the Secret containing the Ignition configuration
 	secretName := fmt.Sprintf("%s-ignition", butaneConfig.Name)
 	secret := &corev1.Secret{
 		ObjectMeta: metav1.ObjectMeta{
@@ -83,35 +95,41 @@ func (r *ButaneConfigReconciler) Reconcile(ctx context.Context, req ctrl.Request
 		},
 	}
 
-	// Associer le secret au ButaneConfig
+	// Set the owner reference to the ButaneConfig instance
 	if err := controllerutil.SetControllerReference(&butaneConfig, secret, r.Scheme); err != nil {
+		r.Recorder.Event(&butaneConfig, corev1.EventTypeWarning, "SetOwnerReferenceFailed", "Failed to set owner reference for the Secret")
 		return ctrl.Result{}, err
 	}
 
-	// Créer ou mettre à jour le secret
+	// Create or update the Secret in the cluster
 	if err := r.Client.Create(ctx, secret); err != nil {
 		if apierrors.IsAlreadyExists(err) {
 			if err := r.Client.Update(ctx, secret); err != nil {
+				r.Recorder.Event(&butaneConfig, corev1.EventTypeWarning, "SecretUpdateFailed", "Failed to update the Secret")
 				return ctrl.Result{}, err
 			}
 		} else {
+			r.Recorder.Event(&butaneConfig, corev1.EventTypeWarning, "SecretCreateFailed", "Failed to create the Secret")
 			return ctrl.Result{}, err
 		}
 	}
 
-	// Mettre à jour le statut de ButaneConfig
+	// Update the status of ButaneConfig
 	butaneConfig.Status.SecretName = secretName
 	if err := r.Status().Update(ctx, &butaneConfig); err != nil {
+		r.Recorder.Event(&butaneConfig, corev1.EventTypeWarning, "StatusUpdateFailed", "Failed to update ButaneConfig status")
 		return ctrl.Result{}, err
 	}
 
-	log.Info("ButaneConfig traité avec succès", "secretName", secretName)
+	log.Info("Successfully processed ButaneConfig", "secretName", secretName)
+	r.Recorder.Event(&butaneConfig, corev1.EventTypeNormal, "ReconciliationSucceeded", "Successfully reconciled ButaneConfig")
 
 	return ctrl.Result{}, nil
 }
 
 // SetupWithManager sets up the controller with the Manager.
 func (r *ButaneConfigReconciler) SetupWithManager(mgr ctrl.Manager) error {
+	r.Recorder = mgr.GetEventRecorderFor("butaneconfig-controller")
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&butanev1alpha1.ButaneConfig{}).
 		Complete(r)
