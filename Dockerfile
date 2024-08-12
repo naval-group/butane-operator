@@ -9,6 +9,10 @@ ARG TARGETOS
 ARG TARGETARCH
 
 WORKDIR /workspace
+
+# Copy Seanergy's Certification Authority
+COPY certs/ /etc/ssl/certs/
+
 # Copy the Go Modules manifests
 COPY go.mod go.mod
 COPY go.sum go.sum
