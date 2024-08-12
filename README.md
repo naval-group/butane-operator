@@ -1,8 +1,57 @@
 # butane-operator
-// TODO(user): Add simple overview of use/purpose
+![](assets/title.png)
 
 ## Description
-// TODO(user): An in-depth paragraph about your project and overview of use
+
+The **Butane Operator** is a Kubernetes operator that automates the conversion of Butane configuration files from specific CRD into Ignition configurations into a secret. For example to give this secret to a KubeVirt CoreOS Machine. 
+The operator watches for custom ButaneConfig resources and automatically translates them into Ignition JSON, storing the results in Kubernetes secrets for secure and easy access.
+
+Butane is a tool that simplifies the creation of Ignition files, which are essential for provisioning CoreOS-based systems. 
+
+Documenations Links : [Butane](https://coreos.github.io/butane/) | [Ignition](https://coreos.github.io/ignition/)
+
+## Features
+
+- **Automatic Conversion**: Watches for ButaneConfig custom resources and automatically converts them to Ignition configurations.
+- **Secure Storage**: Stores the resulting Ignition JSON in Kubernetes secrets.
+- **Kubernetes-Native**: Leverages Kubernetes' native capabilities for managing and storing configurations.
+- **Extensible**: Can be extended to support additional features or custom workflows.
+
+## Usage
+
+Create a ButaneConfig Resource:  
+
+Define your Butane configuration in a YAML file and apply it to your cluster.
+```yaml
+apiVersion: butane.example.com/v1alpha1
+kind: ButaneConfig
+metadata:
+  name: my-butane-config
+  namespace: default
+spec:
+  config:
+    variant: fcos
+    version: 1.2.0
+    storage:
+      files:
+        - path: /etc/motd
+          contents:
+            inline: |
+              Hello, CoreOS!
+````
+
+Apply the resource:
+
+```sh
+kubectl apply -f my-butane-config.yaml
+````
+
+Check the Generated Secret:
+The operator will generate a Kubernetes secret containing the Ignition configuration.
+
+```sh
+kubectl get secret my-butane-config-ignition -o yaml
+```
 
 ## Getting Started
 
