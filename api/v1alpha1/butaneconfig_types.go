@@ -18,11 +18,12 @@ package v1alpha1
 
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
 )
 
 // ButaneConfigSpec defines the desired state of ButaneConfig
 type ButaneConfigSpec struct {
-	Config string `json:"config,omitempty"`
+	Config runtime.RawExtension `json:"config,omitempty"`
 }
 
 // ButaneConfigStatus defines the observed state of ButaneConfig
