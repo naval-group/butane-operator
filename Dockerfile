@@ -1,5 +1,10 @@
 # Build the manager binary
-FROM harbor.main.dmz.mylittleforge.org/docker.io/library/golang:1.21 AS builder
+FROM harbor.main.dmz.mylittleforge.org/docker.io/chainguard/go AS builder
+
+ENV GONOPROXY=gitlab.ftf.everest.mylittleforge.org/*
+ENV GOPROXY=https://nexus.main.dmz.mylittleforge.org/repository/go-proxy,direct
+ENV GOSUMDB=off
+
 ARG TARGETOS
 ARG TARGETARCH
 
