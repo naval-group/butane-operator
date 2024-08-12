@@ -39,6 +39,6 @@ push image:
     rm -rf /etc/ssl/certs/*
     cp /etc/gitlab-runner/certs/ca.crt /etc/ssl/certs/ca-certificates.crt
   script: |
-    crane auth login --username "$KANIKO_SA_USERNAME" --password "$KANIKO_SA_PASSWORD" "$INTERNAL_OCI_REGISTRY"
+    crane auth login --username "$REGISTRY_USER" --password "$REGISTRY_PASSWORD" "$INTERNAL_OCI_REGISTRY"
     IMAGE="$INTERNAL_OCI_REGISTRY/$IMAGE_REPO/$IMAGE_NAME:$CI_COMMIT_REF_SLUG"; echo "$IMAGE"
     crane push $IMAGE_NAME.tar "$IMAGE"
