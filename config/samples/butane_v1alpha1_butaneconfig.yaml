@@ -1,0 +1,9 @@
+apiVersion: butane.openshift.io/v1alpha1
+kind: ButaneConfig
+metadata:
+  labels:
+    app.kubernetes.io/name: butane-operator
+    app.kubernetes.io/managed-by: kustomize
+  name: butaneconfig-sample
+spec:
+  # TODO(user): Add fields here
