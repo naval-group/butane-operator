@@ -1,6 +1,6 @@
 variables:
   IMAGE_NAME: $CI_PROJECT_NAME
-  IMAGE_REPO: operators
+  IMAGE_REPO: managed-services
 
 build image:
   stage: 📦 build
