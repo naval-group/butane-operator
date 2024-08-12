@@ -20,28 +20,20 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-// EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
-// NOTE: json tags are required.  Any new fields you add must have json tags for the fields to be serialized.
-
-// ButaneConfigSpec defines the desired state of ButaneConfig
+// ButaneConfigSpec définit les attributs souhaités pour ButaneConfig
 type ButaneConfigSpec struct {
-	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
-	// Important: Run "make" to regenerate code after modifying this file
-
-	// Foo is an example field of ButaneConfig. Edit butaneconfig_types.go to remove/update
-	Foo string `json:"foo,omitempty"`
+	Config string `json:"config,omitempty"`
 }
 
-// ButaneConfigStatus defines the observed state of ButaneConfig
+// ButaneConfigStatus définit le statut observé pour ButaneConfig
 type ButaneConfigStatus struct {
-	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
-	// Important: Run "make" to regenerate code after modifying this file
+	SecretName string `json:"secretName,omitempty"`
 }
 
 //+kubebuilder:object:root=true
 //+kubebuilder:subresource:status
 
-// ButaneConfig is the Schema for the butaneconfigs API
+// ButaneConfig est le schéma de la ressource ButaneConfig API
 type ButaneConfig struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
@@ -52,7 +44,7 @@ type ButaneConfig struct {
 
 //+kubebuilder:object:root=true
 
-// ButaneConfigList contains a list of ButaneConfig
+// ButaneConfigList contient une liste de ButaneConfig
 type ButaneConfigList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`
