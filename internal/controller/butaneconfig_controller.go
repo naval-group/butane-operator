@@ -46,6 +46,7 @@ type ButaneConfigReconciler struct {
 //+kubebuilder:rbac:groups=butane.openshift.io,resources=butaneconfigs/status,verbs=get;update;patch
 //+kubebuilder:rbac:groups=butane.openshift.io,resources=butaneconfigs/finalizers,verbs=update
 //+kubebuilder:rbac:groups="",resources=secrets,verbs=get;list;watch;create;update;patch;delete
+//+kubebuilder:rbac:groups="",resources=events,verbs=create;patch;update
 
 func (r *ButaneConfigReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	log := r.Log.WithValues("butaneconfig", req.NamespacedName)
