@@ -15,7 +15,7 @@ webhooks:
   name: mbutaneconfig.kb.io
   rules:
   - apiGroups:
-    - butane.openshift.io
+    - butane.operators.naval-group.com
     apiVersions:
     - v1alpha1
     operations:
@@ -41,7 +41,7 @@ webhooks:
   name: vbutaneconfig.kb.io
   rules:
   - apiGroups:
-    - butane.openshift.io
+    - butane.operators.naval-group.com
     apiVersions:
     - v1alpha1
     operations:

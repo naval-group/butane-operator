@@ -2,7 +2,7 @@
 # since it depends on service name and namespace that are out of this kustomize package.
 # It should be run by config/default
 resources:
-- bases/butane.openshift.io_butaneconfigs.yaml
+- bases/butane.operators.naval-group.com_butaneconfigs.yaml
 #+kubebuilder:scaffold:crdkustomizeresource
 
 patches:

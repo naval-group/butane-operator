@@ -8,7 +8,7 @@ metadata:
   name: butaneconfig-viewer-role
 rules:
 - apiGroups:
-  - butane.openshift.io
+  - butane.operators.naval-group.com
   resources:
   - butaneconfigs
   verbs:
@@ -16,7 +16,7 @@ rules:
   - list
   - watch
 - apiGroups:
-  - butane.openshift.io
+  - butane.operators.naval-group.com
   resources:
   - butaneconfigs/status
   verbs:

@@ -42,9 +42,9 @@ type ButaneConfigReconciler struct {
 	Recorder record.EventRecorder
 }
 
-//+kubebuilder:rbac:groups=butane.openshift.io,resources=butaneconfigs,verbs=get;list;watch;create;update;patch;delete
-//+kubebuilder:rbac:groups=butane.openshift.io,resources=butaneconfigs/status,verbs=get;update;patch
-//+kubebuilder:rbac:groups=butane.openshift.io,resources=butaneconfigs/finalizers,verbs=update
+//+kubebuilder:rbac:groups=butane.operators.naval-group.com,resources=butaneconfigs,verbs=get;list;watch;create;update;patch;delete
+//+kubebuilder:rbac:groups=butane.operators.naval-group.com,resources=butaneconfigs/status,verbs=get;update;patch
+//+kubebuilder:rbac:groups=butane.operators.naval-group.com,resources=butaneconfigs/finalizers,verbs=update
 //+kubebuilder:rbac:groups="",resources=secrets,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:groups="",resources=events,verbs=create;patch;update
 
