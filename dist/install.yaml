@@ -490,9 +490,9 @@ webhooks:
     service:
       name: butane-operator-webhook-service
       namespace: butane-operator-system
-      path: /validate-butane-openshift-io-v1alpha1-butaneconfig
+      path: /validate-butane-operators-naval-group-com-v1alpha1-butaneconfig
   failurePolicy: Fail
-  name: vbutaneconfig.kb.io
+  name: validating.butaneconfigs.operators.naval-group.com
   rules:
   - apiGroups:
     - butane.operators.naval-group.com
