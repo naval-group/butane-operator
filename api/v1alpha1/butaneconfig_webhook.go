@@ -39,7 +39,6 @@ func (r *ButaneConfig) SetupWebhookWithManager(mgr ctrl.Manager) error {
 }
 
 //+kubebuilder:webhook:path=/validate-butane-openshift-io-v1alpha1-butaneconfig,mutating=false,failurePolicy=fail,sideEffects=None,groups=butane.openshift.io,resources=butaneconfigs,verbs=create;update,versions=v1alpha1,name=vbutaneconfig.kb.io,admissionReviewVersions=v1
-//+kubebuilder:webhook:path=/mutate-butane-openshift-io-v1alpha1-butaneconfig,mutating=true,failurePolicy=fail,sideEffects=None,groups=butane.openshift.io,resources=butaneconfigs,verbs=create;update,versions=v1alpha1,name=mbutaneconfig.kb.io,admissionReviewVersions=v1
 
 var _ webhook.Defaulter = &ButaneConfig{}
 
@@ -91,7 +90,7 @@ func (r *ButaneConfig) validateButaneConfig() error {
 
 	// Attempt to translate Butane config to Ignition
 	_, report, err := config.TranslateBytes(r.Spec.Config.Raw, common.TranslateBytesOptions{})
-	if err != nil || report.IsFatal() {
+	if err != nil || len(report.Entries) > 0 {
 		return fmt.Errorf("failed to translate Butane to Ignition: %v", report.String())
 	}
 

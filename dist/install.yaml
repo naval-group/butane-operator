@@ -182,6 +182,14 @@ rules:
 - apiGroups:
   - ""
   resources:
+  - events
+  verbs:
+  - create
+  - patch
+  - update
+- apiGroups:
+  - ""
+  resources:
   - secrets
   verbs:
   - create
@@ -402,7 +410,7 @@ spec:
         - --upstream=http://127.0.0.1:8080/
         - --logtostderr=true
         - --v=0
-        image: gcr.io/kubebuilder/kube-rbac-proxy:v0.16.0
+        image: harbor.main.dmz.mylittleforge.org/gcr.io/kubebuilder/kube-rbac-proxy:v0.16.0
         name: kube-rbac-proxy
         ports:
         - containerPort: 8443
@@ -461,37 +469,6 @@ metadata:
   namespace: butane-operator-system
 spec:
   selfSigned: {}
----
-apiVersion: admissionregistration.k8s.io/v1
-kind: MutatingWebhookConfiguration
-metadata:
-  annotations:
-    cert-manager.io/inject-ca-from: butane-operator-system/butane-operator-serving-cert
-  labels:
-    app.kubernetes.io/managed-by: kustomize
-    app.kubernetes.io/name: butane-operator
-  name: butane-operator-mutating-webhook-configuration
-webhooks:
-- admissionReviewVersions:
-  - v1
-  clientConfig:
-    service:
-      name: butane-operator-webhook-service
-      namespace: butane-operator-system
-      path: /mutate-butane-openshift-io-v1alpha1-butaneconfig
-  failurePolicy: Fail
-  name: mbutaneconfig.kb.io
-  rules:
-  - apiGroups:
-    - butane.openshift.io
-    apiVersions:
-    - v1alpha1
-    operations:
-    - CREATE
-    - UPDATE
-    resources:
-    - butaneconfigs
-  sideEffects: None
 ---
 apiVersion: admissionregistration.k8s.io/v1
 kind: ValidatingWebhookConfiguration
