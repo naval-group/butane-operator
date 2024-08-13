@@ -23,7 +23,7 @@ Create a ButaneConfig Resource:
 
 Define your Butane configuration in a YAML file and apply it to your cluster.
 ```yaml
-apiVersion: butane.example.com/v1alpha1
+apiVersion: butane.operators.naval-group.com/v1alpha1
 kind: ButaneConfig
 metadata:
   name: my-butane-config
@@ -31,7 +31,7 @@ metadata:
 spec:
   config:
     variant: fcos
-    version: 1.2.0
+    version: 1.5.0
     storage:
       files:
         - path: /etc/motd
@@ -51,6 +51,40 @@ The operator will generate a Kubernetes secret containing the Ignition configura
 
 ```sh
 kubectl get secret my-butane-config-ignition -o yaml
+```
+
+You can directly use secret inside KubeVirt VirtualMachine
+```yaml
+apiVersion: kubevirt.io/v1
+kind: VirtualMachine
+metadata:
+  name: my-fcos
+spec:
+  runStrategy: Always
+  template:
+    spec:
+      domain:
+        devices:
+          disks:
+          - name: containerdisk
+            disk:
+              bus: virtio
+          - name: cloudinitdisk
+            disk:
+              bus: virtio
+          rng: {}
+        resources:
+          requests:
+            memory: 2048M
+      volumes:
+      - name: containerdisk
+        containerDisk:
+          image: quay.io/fedora/fedora-coreos-kubevirt:stable
+          imagePullPolicy: Always
+      - name: cloudinitdisk
+        cloudInitConfigDrive:
+          secretRef:
+            name: my-butane-config-ignition
 ```
 
 ## Getting Started
