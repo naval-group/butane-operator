@@ -18,7 +18,6 @@ package controller
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 
 	"github.com/coreos/butane/config"
@@ -70,16 +69,9 @@ func (r *ButaneConfigReconciler) Reconcile(ctx context.Context, req ctrl.Request
 
 	// Convert the ButaneConfig to an Ignition config
 	ignitionConfig, rpt, err := config.TranslateBytes(rawConfig, common.TranslateBytesOptions{})
-	if err != nil || rpt.IsFatal() {
+	if err != nil || len(rpt.Entries) > 0 {
 		log.Error(err, "Error translating ButaneConfig to Ignition config")
-		r.Recorder.Event(&butaneConfig, corev1.EventTypeWarning, "ConversionFailed", "Failed to convert ButaneConfig to Ignition config")
-		return ctrl.Result{}, err
-	}
-
-	ignitionJSON, err := json.Marshal(ignitionConfig)
-	if err != nil {
-		log.Error(err, "Error marshaling Ignition config to JSON")
-		r.Recorder.Event(&butaneConfig, corev1.EventTypeWarning, "JSONMarshalFailed", "Failed to marshal Ignition config to JSON")
+		r.Recorder.Event(&butaneConfig, corev1.EventTypeWarning, "ConversionFailed", fmt.Sprintf("Failed to convert ButaneConfig to Ignition config: %s", rpt.String()))
 		return ctrl.Result{}, err
 	}
 
@@ -91,7 +83,7 @@ func (r *ButaneConfigReconciler) Reconcile(ctx context.Context, req ctrl.Request
 			Namespace: butaneConfig.Namespace,
 		},
 		Data: map[string][]byte{
-			"ignition.json": ignitionJSON,
+			"userdata": ignitionConfig,
 		},
 	}
 
