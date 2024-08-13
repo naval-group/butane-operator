@@ -8,7 +8,7 @@ metadata:
   name: butaneconfig-editor-role
 rules:
 - apiGroups:
-  - butane.openshift.io
+  - butane.coreos.com
   resources:
   - butaneconfigs
   verbs:
@@ -20,7 +20,7 @@ rules:
   - update
   - watch
 - apiGroups:
-  - butane.openshift.io
+  - butane.coreos.com
   resources:
   - butaneconfigs/status
   verbs:

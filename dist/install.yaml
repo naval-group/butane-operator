@@ -13,7 +13,7 @@ metadata:
   annotations:
     cert-manager.io/inject-ca-from: butane-operator-system/butane-operator-serving-cert
     controller-gen.kubebuilder.io/version: v0.14.0
-  name: butaneconfigs.butane.openshift.io
+  name: butaneconfigs.butane.coreos.com
 spec:
   conversion:
     strategy: Webhook
@@ -25,7 +25,7 @@ spec:
           path: /convert
       conversionReviewVersions:
       - v1
-  group: butane.openshift.io
+  group: butane.coreos.com
   names:
     kind: ButaneConfig
     listKind: ButaneConfigList
@@ -133,7 +133,7 @@ metadata:
   name: butane-operator-butaneconfig-editor-role
 rules:
 - apiGroups:
-  - butane.openshift.io
+  - butane.coreos.com
   resources:
   - butaneconfigs
   verbs:
@@ -145,7 +145,7 @@ rules:
   - update
   - watch
 - apiGroups:
-  - butane.openshift.io
+  - butane.coreos.com
   resources:
   - butaneconfigs/status
   verbs:
@@ -160,7 +160,7 @@ metadata:
   name: butane-operator-butaneconfig-viewer-role
 rules:
 - apiGroups:
-  - butane.openshift.io
+  - butane.coreos.com
   resources:
   - butaneconfigs
   verbs:
@@ -168,7 +168,7 @@ rules:
   - list
   - watch
 - apiGroups:
-  - butane.openshift.io
+  - butane.coreos.com
   resources:
   - butaneconfigs/status
   verbs:
@@ -200,7 +200,7 @@ rules:
   - update
   - watch
 - apiGroups:
-  - butane.openshift.io
+  - butane.coreos.com
   resources:
   - butaneconfigs
   verbs:
@@ -212,13 +212,13 @@ rules:
   - update
   - watch
 - apiGroups:
-  - butane.openshift.io
+  - butane.coreos.com
   resources:
   - butaneconfigs/finalizers
   verbs:
   - update
 - apiGroups:
-  - butane.openshift.io
+  - butane.coreos.com
   resources:
   - butaneconfigs/status
   verbs:
@@ -410,7 +410,7 @@ spec:
         - --upstream=http://127.0.0.1:8080/
         - --logtostderr=true
         - --v=0
-        image: gcr.io/kubebuilder/kube-rbac-proxy:v0.16.0
+        image: harbor.main.dmz.mylittleforge.org/gcr.io/kubebuilder/kube-rbac-proxy:v0.16.0
         name: kube-rbac-proxy
         ports:
         - containerPort: 8443
@@ -491,7 +491,7 @@ webhooks:
   name: mbutaneconfig.kb.io
   rules:
   - apiGroups:
-    - butane.openshift.io
+    - butane.coreos.com
     apiVersions:
     - v1alpha1
     operations:
@@ -526,7 +526,7 @@ webhooks:
   name: vbutaneconfig.kb.io
   rules:
   - apiGroups:
-    - butane.openshift.io
+    - butane.coreos.com
     apiVersions:
     - v1alpha1
     operations:

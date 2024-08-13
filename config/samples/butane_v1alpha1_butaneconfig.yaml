@@ -1,4 +1,4 @@
-apiVersion: butane.openshift.io/v1alpha1
+apiVersion: butane.coreos.com/v1alpha1
 kind: ButaneConfig
 metadata:
   labels:

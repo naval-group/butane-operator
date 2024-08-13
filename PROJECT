@@ -2,7 +2,7 @@
 # This file is used to track the info used to scaffold your project
 # and allow the plugins properly work.
 # More info: https://book.kubebuilder.io/reference/project-config.html
-domain: openshift.io
+domain: coreos.com
 layout:
 - go.kubebuilder.io/v4
 plugins:
@@ -15,7 +15,7 @@ resources:
     crdVersion: v1
     namespaced: true
   controller: true
-  domain: openshift.io
+  domain: coreos.com
   group: butane
   kind: ButaneConfig
   path: gitlab.ftf.everest.mylittleforge.org/forge/operators/butane-operator/api/v1alpha1
