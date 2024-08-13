@@ -39,7 +39,6 @@ func (r *ButaneConfig) SetupWebhookWithManager(mgr ctrl.Manager) error {
 }
 
 //+kubebuilder:webhook:path=/validate-butane-openshift-io-v1alpha1-butaneconfig,mutating=false,failurePolicy=fail,sideEffects=None,groups=butane.coreos.com,resources=butaneconfigs,verbs=create;update,versions=v1alpha1,name=vbutaneconfig.kb.io,admissionReviewVersions=v1
-//+kubebuilder:webhook:path=/mutate-butane-openshift-io-v1alpha1-butaneconfig,mutating=true,failurePolicy=fail,sideEffects=None,groups=butane.coreos.com,resources=butaneconfigs,verbs=create;update,versions=v1alpha1,name=mbutaneconfig.kb.io,admissionReviewVersions=v1
 
 var _ webhook.Defaulter = &ButaneConfig{}
 
