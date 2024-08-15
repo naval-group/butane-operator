@@ -23,18 +23,23 @@ import (
 
 // ButaneConfigSpec defines the desired state of ButaneConfig
 type ButaneConfigSpec struct {
+	// An object that follows Butane specifications.
+	// More info: https://coreos.github.io/butane/specs/
 	Config runtime.RawExtension `json:"config,omitempty"`
 }
 
 // ButaneConfigStatus defines the observed state of ButaneConfig
 type ButaneConfigStatus struct {
+	// The name of the generated secret containing the ignition content in userdata key
+	// More info: https://coreos.github.io/ignition/specs/
 	SecretName string `json:"secretName,omitempty"`
 }
 
 //+kubebuilder:object:root=true
 //+kubebuilder:subresource:status
 
-// ButaneConfig is the Schema for the butaneconfigs API
+// ButaneConfig is a resource that transplane Butane config
+// into an Ignition formatted secret.
 type ButaneConfig struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`

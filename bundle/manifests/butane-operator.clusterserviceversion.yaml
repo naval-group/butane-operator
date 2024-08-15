@@ -8,28 +8,29 @@ metadata:
           "apiVersion": "butane.coreos.com/v1alpha1",
           "kind": "ButaneConfig",
           "metadata": {
-            "name": "butaneconfig-sample",
-            "namespace": "sample"
+            "name": "butane-operator-butaneconfig-sample",
+            "namespace": "butane-operator-system"
           },
           "spec": {
             "config": {
-              "variant": "fcos",
-              "version": "1.5.0",
               "storage": {
                 "files": [
                   {
-                    "path": "/etc/motd",
                     "contents": {
-                      "inline": "Hello, CoreOS !"
-                    }
+                      "inline": "Hello, CoreOS!\n"
+                    },
+                    "path": "/etc/motd"
                   }
                 ]
-              }
+              },
+              "variant": "fcos",
+              "version": "1.5.0"
             }
           }
         }
       ]
     capabilities: Full Lifecycle
+    createdAt: "2024-08-15T23:22:03Z"
     features.operators.openshift.io/disconnected: "true"
     features.operators.openshift.io/fips-compliant: "false"
     features.operators.openshift.io/proxy-aware: "false"

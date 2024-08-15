@@ -36,7 +36,9 @@ spec:
   - name: v1alpha1
     schema:
       openAPIV3Schema:
-        description: ButaneConfig is the Schema for the butaneconfigs API
+        description: |-
+          ButaneConfig is a resource that transplane Butane config
+          into an Ignition formatted secret.
         properties:
           apiVersion:
             description: |-
@@ -59,6 +61,9 @@ spec:
             description: ButaneConfigSpec defines the desired state of ButaneConfig
             properties:
               config:
+                description: |-
+                  An object that follows Butane specifications.
+                  More info: https://coreos.github.io/butane/specs/
                 type: object
                 x-kubernetes-preserve-unknown-fields: true
             type: object
@@ -66,6 +71,9 @@ spec:
             description: ButaneConfigStatus defines the observed state of ButaneConfig
             properties:
               secretName:
+                description: |-
+                  The name of the generated secret containing the ignition content in userdata key
+                  More info: https://coreos.github.io/ignition/specs/
                 type: string
             type: object
         type: object
