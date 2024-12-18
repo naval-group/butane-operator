@@ -30,7 +30,7 @@ metadata:
         }
       ]
     capabilities: Full Lifecycle
-    createdAt: "2024-08-15T23:22:03Z"
+    createdAt: "2024-12-18T14:18:42Z"
     features.operators.openshift.io/disconnected: "true"
     features.operators.openshift.io/fips-compliant: "false"
     features.operators.openshift.io/proxy-aware: "false"
@@ -41,7 +41,7 @@ metadata:
     olm.operatorGroup: global-operators
     olm.operatorNamespace: openshift-operators
     operatorframework.io/properties: '{"properties":[{"type":"olm.gvk","value":{"group":"butane.operators.naval-group.com","kind":"ButaneConfig","version":"v1alpha1"}},{"type":"olm.package","value":{"packageName":"butane-operator","version":"0.0.1"}}]}'
-    operators.operatorframework.io/builder: operator-sdk-v1.36.0
+    operators.operatorframework.io/builder: operator-sdk-v1.38.0
     operators.operatorframework.io/project_layout: go.kubebuilder.io/v4
   labels:
     operatorframework.io/arch.amd64: supported
@@ -190,7 +190,7 @@ spec:
                 - --leader-elect
                 command:
                 - /manager
-                image: internal.repo.mylittleforge.org/managed-services/butane-operator:main
+                image: controller:latest
                 livenessProbe:
                   httpGet:
                     path: /healthz
@@ -210,11 +210,11 @@ spec:
                   periodSeconds: 10
                 resources:
                   limits:
-                    cpu: 500m
-                    memory: 128Mi
+                    cpu: 800m
+                    memory: 1Gi
                   requests:
-                    cpu: 10m
-                    memory: 64Mi
+                    cpu: 100m
+                    memory: 128Mi
                 securityContext:
                   allowPrivilegeEscalation: false
                   capabilities:
