@@ -30,7 +30,7 @@ metadata:
         }
       ]
     capabilities: Full Lifecycle
-    createdAt: "2024-12-18T14:18:42Z"
+    createdAt: "2024-12-18T14:22:26Z"
     features.operators.openshift.io/disconnected: "true"
     features.operators.openshift.io/fips-compliant: "false"
     features.operators.openshift.io/proxy-aware: "false"
@@ -190,7 +190,7 @@ spec:
                 - --leader-elect
                 command:
                 - /manager
-                image: controller:latest
+                image: internal.repo.mylittleforge.org/managed-services/butane-operator:main
                 livenessProbe:
                   httpGet:
                     path: /healthz
