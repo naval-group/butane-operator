@@ -6,7 +6,7 @@ toolchain go1.22.5
 
 require (
 	github.com/coreos/butane v0.21.0
-	github.com/go-logr/logr v1.4.1
+	github.com/go-logr/logr v1.4.3
 	github.com/onsi/ginkgo/v2 v2.15.0
 	github.com/onsi/gomega v1.31.0
 	k8s.io/api v0.29.2
