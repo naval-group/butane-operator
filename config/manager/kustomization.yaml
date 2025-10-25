@@ -4,5 +4,5 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 images:
 - name: controller
-  newName: internal.repo.mylittleforge.org/managed-services/butane-operator
-  newTag: main
+  newName: example.com/butane-operator
+  newTag: v0.0.1

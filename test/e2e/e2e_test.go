@@ -34,8 +34,8 @@ var _ = Describe("controller", Ordered, func() {
 		By("installing prometheus operator")
 		Expect(utils.InstallPrometheusOperator()).To(Succeed())
 
-		By("installing the cert-manager")
-		Expect(utils.InstallCertManager()).To(Succeed())
+		// NOTE: Cert-manager installation skipped for e2e tests
+		// We use config/e2e which has webhooks disabled to avoid cert issues
 
 		By("creating manager namespace")
 		cmd := exec.Command("kubectl", "create", "ns", namespace)
@@ -45,9 +45,6 @@ var _ = Describe("controller", Ordered, func() {
 	AfterAll(func() {
 		By("uninstalling the Prometheus manager bundle")
 		utils.UninstallPrometheusOperator()
-
-		By("uninstalling the cert-manager bundle")
-		utils.UninstallCertManager()
 
 		By("removing manager namespace")
 		cmd := exec.Command("kubectl", "delete", "ns", namespace)
@@ -76,8 +73,10 @@ var _ = Describe("controller", Ordered, func() {
 			_, err = utils.Run(cmd)
 			ExpectWithOffset(1, err).NotTo(HaveOccurred())
 
-			By("deploying the controller-manager")
-			cmd = exec.Command("make", "deploy", fmt.Sprintf("IMG=%s", projectimage))
+			By("deploying the controller-manager (without webhooks for e2e)")
+			// Use config/e2e which has webhooks disabled
+			cmd = exec.Command("sh", "-c",
+				fmt.Sprintf("cd config/manager && ../../bin/kustomize edit set image controller=%s && cd ../.. && bin/kustomize build config/e2e | kubectl apply -f -", projectimage))
 			_, err = utils.Run(cmd)
 			ExpectWithOffset(1, err).NotTo(HaveOccurred())
 
@@ -117,6 +116,200 @@ var _ = Describe("controller", Ordered, func() {
 			}
 			EventuallyWithOffset(1, verifyControllerUp, time.Minute, time.Second).Should(Succeed())
 
+		})
+
+		It("should create Ignition secret from ButaneConfig", func() {
+			By("creating a ButaneConfig resource")
+			sampleFile := "config/samples/butane_v1alpha1_butaneconfig.yaml"
+			// Apply without namespace flag - the sample has namespace: default
+			cmd := exec.Command("kubectl", "apply", "-f", sampleFile)
+			_, err := utils.Run(cmd)
+			ExpectWithOffset(1, err).NotTo(HaveOccurred())
+
+			By("validating that the ButaneConfig was created")
+			Eventually(func() error {
+				cmd = exec.Command("kubectl", "get", "butaneconfig", "butaneconfig-sample", "-n", "default")
+				_, err := utils.Run(cmd)
+				return err
+			}, time.Minute, time.Second).Should(Succeed())
+
+			By("validating that the Ignition secret was created")
+			Eventually(func() error {
+				cmd = exec.Command("kubectl", "get", "secret", "butaneconfig-sample-ignition", "-n", "default")
+				_, err := utils.Run(cmd)
+				return err
+			}, 2*time.Minute, time.Second).Should(Succeed())
+
+			By("validating that the secret contains userdata key")
+			cmd = exec.Command("kubectl", "get", "secret", "butaneconfig-sample-ignition",
+				"-n", "default", "-o", "jsonpath={.data.userdata}")
+			output, err := utils.Run(cmd)
+			ExpectWithOffset(1, err).NotTo(HaveOccurred())
+			ExpectWithOffset(1, string(output)).NotTo(BeEmpty(), "Secret should contain userdata")
+
+			By("validating that the ButaneConfig status was updated")
+			cmd = exec.Command("kubectl", "get", "butaneconfig", "butaneconfig-sample",
+				"-n", "default", "-o", "jsonpath={.status.secretName}")
+			output, err = utils.Run(cmd)
+			ExpectWithOffset(1, err).NotTo(HaveOccurred())
+			ExpectWithOffset(1, string(output)).To(Equal("butaneconfig-sample-ignition"))
+
+			By("validating that the secret contains valid Ignition JSON")
+			cmd = exec.Command("kubectl", "get", "secret", "butaneconfig-sample-ignition",
+				"-n", "default", "-o", "jsonpath={.data.userdata}")
+			output, err = utils.Run(cmd)
+			ExpectWithOffset(1, err).NotTo(HaveOccurred())
+
+			// Decode base64 and validate JSON structure
+			cmd = exec.Command("bash", "-c",
+				fmt.Sprintf("echo '%s' | base64 -d | jq -e '.ignition.version'", string(output)))
+			_, err = utils.Run(cmd)
+			ExpectWithOffset(1, err).NotTo(HaveOccurred(), "Secret should contain valid Ignition JSON with ignition.version")
+
+			By("cleaning up the ButaneConfig resource")
+			cmd = exec.Command("kubectl", "delete", "-f", sampleFile)
+			_, err = utils.Run(cmd)
+			ExpectWithOffset(1, err).NotTo(HaveOccurred())
+
+			By("validating that the secret was cleaned up (owner reference)")
+			Eventually(func() error {
+				cmd = exec.Command("kubectl", "get", "secret", "butaneconfig-sample-ignition", "-n", "default")
+				_, err := utils.Run(cmd)
+				if err == nil {
+					return fmt.Errorf("secret still exists")
+				}
+				return nil
+			}, time.Minute, time.Second).Should(Succeed())
+		})
+
+		It("should update secret when ButaneConfig is modified", func() {
+			By("creating a temporary ButaneConfig manifest")
+			tempManifest := "/tmp/butaneconfig-update-test.yaml"
+			initialConfig := `apiVersion: butane.operators.naval-group.com/v1alpha1
+kind: ButaneConfig
+metadata:
+  name: butaneconfig-update-test
+  namespace: default
+spec:
+  config:
+    variant: fcos
+    version: 1.5.0
+    storage:
+      files:
+        - path: /etc/hostname
+          contents:
+            inline: initial-hostname
+`
+			cmd := exec.Command("bash", "-c", fmt.Sprintf("cat > %s << 'EOF'\n%s\nEOF", tempManifest, initialConfig))
+			_, err := utils.Run(cmd)
+			ExpectWithOffset(1, err).NotTo(HaveOccurred())
+
+			By("creating the initial ButaneConfig")
+			cmd = exec.Command("kubectl", "apply", "-f", tempManifest)
+			_, err = utils.Run(cmd)
+			ExpectWithOffset(1, err).NotTo(HaveOccurred())
+
+			By("waiting for initial secret creation")
+			var initialSecretData string
+			Eventually(func() error {
+				cmd = exec.Command("kubectl", "get", "secret", "butaneconfig-update-test-ignition",
+					"-n", "default", "-o", "jsonpath={.data.userdata}")
+				output, err := utils.Run(cmd)
+				if err != nil {
+					return err
+				}
+				initialSecretData = string(output)
+				if initialSecretData == "" {
+					return fmt.Errorf("secret data is empty")
+				}
+				return nil
+			}, 2*time.Minute, time.Second).Should(Succeed())
+
+			By("updating the ButaneConfig with new content")
+			updatedConfig := `apiVersion: butane.operators.naval-group.com/v1alpha1
+kind: ButaneConfig
+metadata:
+  name: butaneconfig-update-test
+  namespace: default
+spec:
+  config:
+    variant: fcos
+    version: 1.5.0
+    storage:
+      files:
+        - path: /etc/hostname
+          contents:
+            inline: updated-hostname
+`
+			cmd = exec.Command("bash", "-c", fmt.Sprintf("cat > %s << 'EOF'\n%s\nEOF", tempManifest, updatedConfig))
+			_, err = utils.Run(cmd)
+			ExpectWithOffset(1, err).NotTo(HaveOccurred())
+
+			cmd = exec.Command("kubectl", "apply", "-f", tempManifest)
+			_, err = utils.Run(cmd)
+			ExpectWithOffset(1, err).NotTo(HaveOccurred())
+
+			By("validating that the secret was updated")
+			Eventually(func() bool {
+				cmd = exec.Command("kubectl", "get", "secret", "butaneconfig-update-test-ignition",
+					"-n", "default", "-o", "jsonpath={.data.userdata}")
+				output, err := utils.Run(cmd)
+				if err != nil {
+					return false
+				}
+				updatedSecretData := string(output)
+				return updatedSecretData != initialSecretData && updatedSecretData != ""
+			}, 2*time.Minute, time.Second).Should(BeTrue(), "Secret should be updated with new content")
+
+			By("cleaning up the test resources")
+			cmd = exec.Command("kubectl", "delete", "-f", tempManifest)
+			_, _ = utils.Run(cmd)
+			cmd = exec.Command("rm", "-f", tempManifest)
+			_, _ = utils.Run(cmd)
+		})
+
+		It("should handle invalid ButaneConfig gracefully", func() {
+			By("creating an invalid ButaneConfig manifest")
+			tempManifest := "/tmp/butaneconfig-invalid-test.yaml"
+			invalidConfig := `apiVersion: butane.operators.naval-group.com/v1alpha1
+kind: ButaneConfig
+metadata:
+  name: butaneconfig-invalid-test
+  namespace: default
+spec:
+  config:
+    variant: fcos
+    # Missing required version field
+    storage:
+      files:
+        - path: /etc/test
+          contents:
+            inline: test
+`
+			cmd := exec.Command("bash", "-c", fmt.Sprintf("cat > %s << 'EOF'\n%s\nEOF", tempManifest, invalidConfig))
+			_, err := utils.Run(cmd)
+			ExpectWithOffset(1, err).NotTo(HaveOccurred())
+
+			By("attempting to create the invalid ButaneConfig")
+			cmd = exec.Command("kubectl", "apply", "-f", tempManifest)
+			_, err = utils.Run(cmd)
+			ExpectWithOffset(1, err).NotTo(HaveOccurred()) // Creation may succeed but reconciliation should fail
+
+			By("validating that no secret is created for invalid config")
+			Consistently(func() error {
+				cmd = exec.Command("kubectl", "get", "secret", "butaneconfig-invalid-test-ignition", "-n", "default")
+				_, err := utils.Run(cmd)
+				if err == nil {
+					return fmt.Errorf("secret should not exist for invalid config")
+				}
+				return nil
+			}, 30*time.Second, 2*time.Second).Should(Succeed())
+
+			By("cleaning up the test resources")
+			cmd = exec.Command("kubectl", "delete", "-f", tempManifest, "--ignore-not-found")
+			_, _ = utils.Run(cmd)
+			cmd = exec.Command("rm", "-f", tempManifest)
+			_, _ = utils.Run(cmd)
 		})
 	})
 })

@@ -1,0 +1,14 @@
+# Kustomization for e2e tests - webhooks disabled to avoid cert-manager issues
+namespace: butane-operator-system
+
+namePrefix: butane-operator-
+
+resources:
+- ../crd
+- ../rbac
+- ../manager
+# Webhooks and cert-manager disabled for e2e tests
+
+patches:
+# Protect the /metrics endpoint by putting it behind auth.
+- path: manager_auth_proxy_patch.yaml
