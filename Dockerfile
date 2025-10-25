@@ -1,17 +1,15 @@
 # Build the manager binary
-FROM harbor.main.dmz.mylittleforge.org/docker.io/chainguard/go AS builder
+FROM cgr.dev/chainguard/go@sha256:2355a7b35abafd8e0b4eefcefe2b0e7eafbd2cbc6a7cdc82f48abf7b9e9cde60 AS builder
 
-ENV GONOPROXY=gitlab.ftf.everest.mylittleforge.org/*
-ENV GOPROXY=https://nexus.main.dmz.mylittleforge.org/repository/go-proxy,direct
-ENV GOSUMDB=off
+# Remove internal proxy configuration for open source version
+# ENV GONOPROXY=gitlab.ftf.everest.mylittleforge.org/*
+# ENV GOPROXY=https://nexus.main.dmz.mylittleforge.org/repository/go-proxy,direct
+# ENV GOSUMDB=off
 
 ARG TARGETOS
 ARG TARGETARCH
 
 WORKDIR /workspace
-
-# Copy Seanergy's Certification Authority
-COPY certs/ /etc/ssl/certs/
 
 # Copy the Go Modules manifests
 COPY go.mod go.mod
@@ -33,7 +31,7 @@ COPY internal/controller/ internal/controller/
 RUN CGO_ENABLED=0 GOOS=${TARGETOS:-linux} GOARCH=${TARGETARCH} go build -a -o manager cmd/main.go
 
 # Refer to https://images.chainguard.dev/directory/image/static for more details
-FROM harbor.main.dmz.mylittleforge.org/docker.io/chainguard/static AS runtime
+FROM cgr.dev/chainguard/static@sha256:cd71a91840a1a678638e9b9e6e1b8da9074c35b39b6c0be0e8b50a3b4b5b4ca2 AS runtime
 
 WORKDIR /
 COPY --from=builder /workspace/manager .

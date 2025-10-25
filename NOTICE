@@ -1,0 +1,73 @@
+Butane Operator
+Copyright 2025 Naval Group
+
+This product includes software developed by Naval Group.
+
+================================================================================
+
+This software is licensed under the GNU Lesser General Public License v3.0 or later.
+SPDX-License-Identifier: LGPL-3.0-or-later
+
+================================================================================
+
+THIRD-PARTY SOFTWARE NOTICES AND INFORMATION
+
+This project incorporates components from the following third-party projects:
+
+1. Kubernetes Controller Runtime
+   Copyright The Kubernetes Authors
+   Licensed under the Apache License 2.0
+   https://github.com/kubernetes-sigs/controller-runtime
+
+2. Butane (CoreOS Configuration Transpiler)
+   Copyright The CoreOS Authors
+   Licensed under the Apache License 2.0
+   https://github.com/coreos/butane
+
+3. Kubernetes API
+   Copyright The Kubernetes Authors
+   Licensed under the Apache License 2.0
+   https://github.com/kubernetes/api
+
+4. Go Standard Library
+   Copyright The Go Authors
+   Licensed under the BSD-style license
+   https://golang.org/LICENSE
+
+5. Ginkgo & Gomega (Testing Framework)
+   Copyright Onsi Fakhouri
+   Licensed under the MIT License
+   https://github.com/onsi/ginkgo
+   https://github.com/onsi/gomega
+
+6. Logr (Structured Logging)
+   Copyright The logr Authors
+   Licensed under the Apache License 2.0
+   https://github.com/go-logr/logr
+
+================================================================================
+
+For the complete list of dependencies and their licenses, see go.mod and go.sum files.
+
+================================================================================
+
+TRADEMARK NOTICES
+
+- Kubernetes® is a registered trademark of The Linux Foundation.
+- CoreOS® is a registered trademark of Red Hat, Inc.
+- Docker® is a registered trademark of Docker, Inc.
+
+================================================================================
+
+ADDITIONAL NOTICES
+
+This software includes cryptographic software written by Eric Young (eay@cryptsoft.com).
+This software includes software written by Tim Hudson (tjh@cryptsoft.com).
+
+================================================================================
+
+For questions about licensing or to report license compliance issues,
+please contact: opensource@naval-group.com
+
+This NOTICE file is included as required by the licenses of the incorporated
+third-party software components.
