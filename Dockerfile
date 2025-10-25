@@ -1,10 +1,7 @@
 # Build the manager binary
-FROM cgr.dev/chainguard/go@sha256:2355a7b35abafd8e0b4eefcefe2b0e7eafbd2cbc6a7cdc82f48abf7b9e9cde60 AS builder
-
-# Remove internal proxy configuration for open source version
-# ENV GONOPROXY=gitlab.ftf.everest.mylittleforge.org/*
-# ENV GOPROXY=https://nexus.main.dmz.mylittleforge.org/repository/go-proxy,direct
-# ENV GOSUMDB=off
+FROM mirror.gcr.io/library/golang:1.24 AS builder
+ARG TARGETOS
+ARG TARGETARCH
 
 ARG TARGETOS
 ARG TARGETARCH
@@ -30,9 +27,10 @@ COPY internal/controller/ internal/controller/
 # by leaving it empty we can ensure that the container and binary shipped on it will have the same platform.
 RUN CGO_ENABLED=0 GOOS=${TARGETOS:-linux} GOARCH=${TARGETARCH} go build -a -o manager cmd/main.go
 
-# Refer to https://images.chainguard.dev/directory/image/static for more details
-FROM cgr.dev/chainguard/static@sha256:cd71a91840a1a678638e9b9e6e1b8da9074c35b39b6c0be0e8b50a3b4b5b4ca2 AS runtime
 
+# Use distroless as minimal base image to package the manager binary
+# Refer to https://github.com/GoogleContainerTools/distroless for more details
+FROM gcr.io/distroless/static:nonroot
 WORKDIR /
 COPY --from=builder /workspace/manager .
 USER 65532:65532

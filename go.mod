@@ -1,8 +1,6 @@
 module github.com/naval-group/butane-operator
 
-go 1.22.0
-
-toolchain go1.22.5
+go 1.24.6
 
 require (
 	github.com/coreos/butane v0.21.0
