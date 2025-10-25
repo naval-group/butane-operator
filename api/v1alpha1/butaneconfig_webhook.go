@@ -16,6 +16,7 @@ limitations under the License.
 package v1alpha1
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 
@@ -24,7 +25,6 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
-	"sigs.k8s.io/controller-runtime/pkg/webhook"
 	"sigs.k8s.io/controller-runtime/pkg/webhook/admission"
 )
 
@@ -40,18 +40,15 @@ func (r *ButaneConfig) SetupWebhookWithManager(mgr ctrl.Manager) error {
 
 //+kubebuilder:webhook:path=/validate-butane-operators-naval-group-com-v1alpha1-butaneconfig,mutating=false,failurePolicy=fail,sideEffects=None,groups=butane.operators.naval-group.com,resources=butaneconfigs,verbs=create;update,versions=v1alpha1,name=validating.butaneconfigs.operators.naval-group.com,admissionReviewVersions=v1
 
-var _ webhook.Defaulter = &ButaneConfig{}
-
-// Default implements webhook.Defaulter so a webhook will be registered for the type
-func (r *ButaneConfig) Default() {
+// Default implements defaulting logic for ButaneConfig
+func (r *ButaneConfig) Default(ctx context.Context) error {
 	butaneconfiglog.Info("default", "name", r.Name)
 	// Implement defaulting logic here if needed.
+	return nil
 }
 
-var _ webhook.Validator = &ButaneConfig{}
-
-// ValidateCreate implements webhook.Validator so a webhook will be registered for the type
-func (r *ButaneConfig) ValidateCreate() (admission.Warnings, error) {
+// ValidateCreate implements validation logic for ButaneConfig creation
+func (r *ButaneConfig) ValidateCreate(ctx context.Context) (admission.Warnings, error) {
 	butaneconfiglog.Info("validate create", "name", r.Name)
 
 	// Validate the Butane configuration on creation
@@ -62,8 +59,8 @@ func (r *ButaneConfig) ValidateCreate() (admission.Warnings, error) {
 	return nil, nil
 }
 
-// ValidateUpdate implements webhook.Validator so a webhook will be registered for the type
-func (r *ButaneConfig) ValidateUpdate(old runtime.Object) (admission.Warnings, error) {
+// ValidateUpdate implements validation logic for ButaneConfig updates
+func (r *ButaneConfig) ValidateUpdate(ctx context.Context, old runtime.Object) (admission.Warnings, error) {
 	butaneconfiglog.Info("validate update", "name", r.Name)
 
 	// Validate the Butane configuration on update
@@ -74,8 +71,8 @@ func (r *ButaneConfig) ValidateUpdate(old runtime.Object) (admission.Warnings, e
 	return nil, nil
 }
 
-// ValidateDelete implements webhook.Validator so a webhook will be registered for the type
-func (r *ButaneConfig) ValidateDelete() (admission.Warnings, error) {
+// ValidateDelete implements validation logic for ButaneConfig deletion
+func (r *ButaneConfig) ValidateDelete(ctx context.Context) (admission.Warnings, error) {
 	butaneconfiglog.Info("validate delete", "name", r.Name)
 	// Optionally implement validation on delete, if necessary
 	return nil, nil
