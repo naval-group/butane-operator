@@ -95,9 +95,9 @@ func (r *ButaneConfigReconciler) Reconcile(ctx context.Context, req ctrl.Request
 	}
 
 	// Create or update the Secret in the cluster
-	if err := r.Client.Create(ctx, secret); err != nil {
+	if err := r.Create(ctx, secret); err != nil {
 		if apierrors.IsAlreadyExists(err) {
-			if err := r.Client.Update(ctx, secret); err != nil {
+			if err := r.Update(ctx, secret); err != nil {
 				r.Recorder.Event(&butaneConfig, corev1.EventTypeWarning, "SecretUpdateFailed", "Failed to update the Secret")
 				return ctrl.Result{}, err
 			}
