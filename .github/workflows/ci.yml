@@ -67,3 +67,5 @@ jobs:
 
       - name: Build Docker image
         run: make docker-build IMG=test:latest
+        env:
+          CONTAINER_TOOL: docker
