@@ -38,14 +38,13 @@ func (r *ButaneConfig) SetupWebhookWithManager(mgr ctrl.Manager) error {
 		Complete()
 }
 
-//+kubebuilder:webhook:path=/validate-butane-operators-naval-group-com-v1alpha1-butaneconfig,mutating=false,failurePolicy=fail,sideEffects=None,groups=butane.operators.naval-group.com,resources=butaneconfigs,verbs=create;update,versions=v1alpha1,name=validating.butaneconfigs.operators.naval-group.com,admissionReviewVersions=v1
-
-// Default implements defaulting logic for ButaneConfig
+// Default implements webhook.Defaulter
 func (r *ButaneConfig) Default(ctx context.Context) error {
 	butaneconfiglog.Info("default", "name", r.Name)
-	// Implement defaulting logic here if needed.
 	return nil
 }
+
+//+kubebuilder:webhook:path=/validate-butane-operators-naval-group-com-v1alpha1-butaneconfig,mutating=false,failurePolicy=fail,sideEffects=None,groups=butane.operators.naval-group.com,resources=butaneconfigs,verbs=create;update,versions=v1alpha1,name=validating.butaneconfigs.operators.naval-group.com,admissionReviewVersions=v1
 
 // ValidateCreate implements validation logic for ButaneConfig creation
 func (r *ButaneConfig) ValidateCreate(ctx context.Context) (admission.Warnings, error) {
