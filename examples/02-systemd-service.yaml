@@ -1,0 +1,33 @@
+apiVersion: butane.operators.naval-group.com/v1alpha1
+kind: ButaneConfig
+metadata:
+  name: systemd-service
+  namespace: default
+spec:
+  config:
+    variant: fcos
+    version: 1.5.0
+    systemd:
+      units:
+        - name: hello.service
+          enabled: true
+          contents: |
+            [Unit]
+            Description=Hello World Service
+            After=network-online.target
+            Wants=network-online.target
+
+            [Service]
+            Type=oneshot
+            ExecStart=/usr/bin/echo "Hello from systemd service!"
+            RemainAfterExit=yes
+
+            [Install]
+            WantedBy=multi-user.target
+    storage:
+      files:
+        - path: /etc/hello-world.txt
+          mode: 0644
+          contents:
+            inline: |
+              This file was created by the Butane Operator

@@ -1,0 +1,16 @@
+apiVersion: butane.operators.naval-group.com/v1alpha1
+kind: ButaneConfig
+metadata:
+  name: basic-motd
+  namespace: default
+spec:
+  config:
+    variant: fcos
+    version: 1.5.0
+    storage:
+      files:
+        - path: /etc/motd
+          contents:
+            inline: |
+              Welcome to Fedora CoreOS!
+              This system is managed by Butane Operator.
