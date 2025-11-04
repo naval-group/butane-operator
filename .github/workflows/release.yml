@@ -29,7 +29,7 @@ jobs:
     - name: Set up Go
       uses: actions/setup-go@0a12ed9d6a96ab950c8f026ed9f722fe0da7ef32 # v5.0.2
       with:
-        go-version: '1.22'
+        go-version-file: 'go.mod'
         check-latest: true
 
     - name: Log in to GitHub Container Registry
@@ -81,6 +81,21 @@ jobs:
       run: |
         make build-installer IMG=ghcr.io/${{ github.repository }}:${{ github.ref_name }}
 
+    - name: Verify install.yaml was generated
+      run: |
+        if [ ! -f dist/install.yaml ]; then
+          echo "Error: dist/install.yaml was not generated"
+          exit 1
+        fi
+        echo "✓ install.yaml generated successfully"
+        echo "Verifying image reference in install.yaml..."
+        if grep -q "ghcr.io/${{ github.repository }}:${{ github.ref_name }}" dist/install.yaml; then
+          echo "✓ Correct image reference found: ghcr.io/${{ github.repository }}:${{ github.ref_name }}"
+        else
+          echo "Error: Correct image reference not found in install.yaml"
+          exit 1
+        fi
+
     - name: Generate SBOM
       uses: anchore/sbom-action@d94f46e13c6c62f59525ac9a1e147a99dc0b9bf5 # v0.17.0
       with:
@@ -97,23 +112,87 @@ jobs:
         body: |
           ## Installation
 
+          Install the Butane Operator using kubectl:
+
           ```bash
           kubectl apply -f https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/install.yaml
           ```
 
+          This will install:
+          - Custom Resource Definitions (CRDs)
+          - RBAC roles and bindings
+          - Operator deployment in the `butane-operator-system` namespace
+
           ## Container Images
 
-          - `ghcr.io/${{ github.repository }}:${{ github.ref_name }}`
+          **Multi-architecture support:** `linux/amd64`, `linux/arm64`
 
-          ## Verification
+          ```bash
+          # Version tag
+          ghcr.io/${{ github.repository }}:${{ github.ref_name }}
 
-          The container image is signed with cosign. Verify with:
+          # Immutable digest (recommended for production)
+          ghcr.io/${{ github.repository }}@${{ steps.image.outputs.digest }}
+          ```
+
+          ## Security
+
+          ### Image Verification
+
+          The container image is signed with [Sigstore cosign](https://docs.sigstore.dev/cosign/overview/). Verify the signature:
 
           ```bash
           cosign verify ghcr.io/${{ github.repository }}@${{ steps.image.outputs.digest }} \
             --certificate-identity-regexp="https://github.com/${{ github.repository }}" \
             --certificate-oidc-issuer="https://token.actions.githubusercontent.com"
           ```
+
+          ### SBOM (Software Bill of Materials)
+
+          Download the SBOM from release assets: `sbom.spdx.json`
+
+          ### SLSA Provenance
+
+          SLSA Level 3 provenance is generated and attached to this release automatically.
+
+          ## Quick Start
+
+          After installation, create a ButaneConfig resource:
+
+          ```yaml
+          apiVersion: butane.operators.naval-group.com/v1alpha1
+          kind: ButaneConfig
+          metadata:
+            name: example
+            namespace: default
+          spec:
+            config:
+              variant: fcos
+              version: 1.5.0
+              storage:
+                files:
+                  - path: /etc/motd
+                    contents:
+                      inline: |
+                        Hello from Butane Operator!
+          ```
+
+          Apply it and check the generated secret:
+
+          ```bash
+          kubectl apply -f example.yaml
+          kubectl get secret example-ignition -o yaml
+          ```
+
+          ## Examples
+
+          See the [examples directory](https://github.com/${{ github.repository }}/tree/${{ github.ref_name }}/examples) for more use cases.
+
+          ## Documentation
+
+          - [README](https://github.com/${{ github.repository }}/blob/${{ github.ref_name }}/README.md)
+          - [Contributing Guide](https://github.com/${{ github.repository }}/blob/${{ github.ref_name }}/CONTRIBUTING.md)
+          - [Security Policy](https://github.com/${{ github.repository }}/blob/${{ github.ref_name }}/SECURITY.md)
         generate_release_notes: true
 
   provenance:

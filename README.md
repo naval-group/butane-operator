@@ -97,22 +97,36 @@ spec:
 
 ### Prerequisites
 
-- go version v1.21.0+
-- docker version 17.03+.
-- kubectl version v1.11.3+.
-- Access to a Kubernetes v1.11.3+ cluster.
+- go version v1.22.0+
+- docker version 17.03+ (or podman)
+- kubectl version v1.11.3+
+- Access to a Kubernetes v1.11.3+ cluster
 
-### To Deploy on the cluster
+### Quick Install
+
+Install the latest version directly from GitHub:
+
+```sh
+kubectl apply -f https://github.com/naval-group/butane-operator/releases/latest/download/install.yaml
+```
+
+Or install a specific version:
+
+```sh
+kubectl apply -f https://github.com/naval-group/butane-operator/releases/download/v0.0.1/install.yaml
+```
+
+### To Deploy on the cluster (from source)
 
 **Build and push your image to the location specified by `IMG`:**
 
 ```sh
-make docker-build docker-push IMG=<some-registry>/butane-operator:tag
+make docker-build docker-push IMG=ghcr.io/naval-group/butane-operator:tag
 ```
 
-**NOTE:** This image ought to be published in the personal registry you specified.
+**NOTE:** This image ought to be published in the registry you specified.
 And it is required to have access to pull the image from the working environment.
-Make sure you have the proper permission to the registry if the above commands don’t work.
+Make sure you have the proper permission to the registry if the above commands don't work.
 
 **Install the CRDs into the cluster:**
 
@@ -123,27 +137,33 @@ make install
 **Deploy the Manager to the cluster with the image specified by `IMG`:**
 
 ```sh
-make deploy IMG=<some-registry>/butane-operator:tag
+make deploy IMG=ghcr.io/naval-group/butane-operator:tag
 ```
 
 > **NOTE**: If you encounter RBAC errors, you may need to grant yourself cluster-admin
 > privileges or be logged in as admin.
 
 **Create instances of your solution**
-You can apply the samples (examples) from the config/sample:
+
+You can apply the samples (examples) from the examples folder:
 
 ```sh
-kubectl apply -k config/samples/
+kubectl apply -k examples/
 ```
 
-> **NOTE**: Ensure that the samples has default values to test it out.
+> **NOTE**: See the [examples directory](examples/) for various use cases including:
+> - Basic MOTD configuration
+> - Systemd service management
+> - User management with SSH keys
+> - Docker Compose deployment
+> - Network configuration
 
 ### To Uninstall
 
 **Delete the instances (CRs) from the cluster:**
 
 ```sh
-kubectl delete -k config/samples/
+kubectl delete -k examples/
 ```
 
 **Delete the APIs(CRDs) from the cluster:**
@@ -165,26 +185,75 @@ Following are the steps to build the installer and distribute this project to us
 1. Build the installer for the image built and published in the registry:
 
 ```sh
-make build-installer IMG=<some-registry>/butane-operator:tag
+make build-installer IMG=ghcr.io/naval-group/butane-operator:v0.0.1
 ```
 
-NOTE: The makefile target mentioned above generates an 'install.yaml'
+**NOTE:** The makefile target mentioned above generates an `install.yaml`
 file in the dist directory. This file contains all the resources built
 with Kustomize, which are necessary to install this project without
 its dependencies.
 
 2. Using the installer
 
-Users can just run kubectl apply -f <URL for YAML BUNDLE> to install the project, i.e.:
+Users can install the project directly from GitHub releases:
 
 ```sh
-kubectl apply -f https://raw.githubusercontent.com/<org>/butane-operator/<tag or branch>/dist/install.yaml
+# Install latest release
+kubectl apply -f https://github.com/naval-group/butane-operator/releases/latest/download/install.yaml
+
+# Or install a specific version
+kubectl apply -f https://github.com/naval-group/butane-operator/releases/download/v0.0.1/install.yaml
 ```
+
+### Container Images
+
+Official container images are available at:
+
+```
+ghcr.io/naval-group/butane-operator:latest
+ghcr.io/naval-group/butane-operator:v0.0.1
+```
+
+Images are signed with cosign. Verify with:
+
+```sh
+cosign verify ghcr.io/naval-group/butane-operator:v0.0.1 \
+  --certificate-identity-regexp="https://github.com/naval-group/butane-operator" \
+  --certificate-oidc-issuer="https://token.actions.githubusercontent.com"
+```
+
+## Examples
+
+Comprehensive examples are available in the [examples/](examples/) directory:
+
+- **[01-basic-motd.yaml](examples/01-basic-motd.yaml)** - Simple MOTD file configuration
+- **[02-systemd-service.yaml](examples/02-systemd-service.yaml)** - Custom systemd service
+- **[03-user-management.yaml](examples/03-user-management.yaml)** - User creation with SSH keys
+- **[04-docker-compose.yaml](examples/04-docker-compose.yaml)** - Docker Compose deployment
+- **[05-network-config.yaml](examples/05-network-config.yaml)** - Network configuration with sysctl
+
+See the [examples README](examples/README.md) for detailed usage instructions.
 
 ## Contributing
 
-// TODO(user): Add detailed information on how you would like others to contribute to this project
+Contributions are welcome! Please see our [Contributing Guide](CONTRIBUTING.md) for details on:
+
+- Development setup and workflow
+- Coding standards and best practices
+- Testing requirements
+- Submitting pull requests
+- Reporting issues and feature requests
 
 **NOTE:** Run `make help` for more information on all potential `make` targets
 
-More information can be found via the [Kubebuilder Documentation](https://book.kubebuilder.io/introduction.html)
+## Resources
+
+- [Kubebuilder Documentation](https://book.kubebuilder.io/introduction.html) - Framework used for building this operator
+- [Butane Specification](https://coreos.github.io/butane/) - Input configuration format
+- [Ignition Specification](https://coreos.github.io/ignition/) - Output configuration format
+- [Contributing Guide](CONTRIBUTING.md) - How to contribute to this project
+- [Security Policy](SECURITY.md) - How to report security vulnerabilities
+
+## License
+
+This project is licensed under the LGPL-3.0-or-later - see the [LICENSE](LICENSE) file for details.
