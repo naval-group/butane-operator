@@ -1,5 +1,8 @@
 # butane-operator
 
+[![CodeQL](https://github.com/naval-group/butane-operator/actions/workflows/codeql-analysis.yml/badge.svg)](https://github.com/naval-group/butane-operator/actions/workflows/codeql-analysis.yml)
+[![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/naval-group/butane-operator/badge)](https://scorecard.dev/viewer/?uri=github.com/naval-group/butane-operator)
+
 ![](assets/title.png)
 
 ## Description
