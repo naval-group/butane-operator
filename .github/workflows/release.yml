@@ -202,6 +202,7 @@ jobs:
       actions: read     # Required for reading workflow artifacts
       id-token: write   # Required for SLSA provenance signing
       contents: write   # Required for attaching provenance to release
+      packages: write   # Required for attaching provenance to container image
     uses: slsa-framework/slsa-github-generator/.github/workflows/generator_container_slsa3.yml@v2.1.0
     with:
       image: ghcr.io/${{ github.repository }}
