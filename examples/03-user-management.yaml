@@ -1,0 +1,33 @@
+apiVersion: butane.operators.naval-group.com/v1alpha1
+kind: ButaneConfig
+metadata:
+  name: user-management
+  namespace: default
+spec:
+  config:
+    variant: fcos
+    version: 1.5.0
+    passwd:
+      users:
+        - name: core
+          ssh_authorized_keys:
+            - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQC... example-key
+          groups:
+            - docker
+            - wheel
+        - name: appuser
+          groups:
+            - docker
+    storage:
+      files:
+        - path: /home/core/.bashrc
+          mode: 0644
+          user:
+            name: core
+          group:
+            name: core
+          contents:
+            inline: |
+              # Custom bashrc for core user
+              export PS1='\u@\h:\w\$ '
+              alias ll='ls -la'
