@@ -7,14 +7,6 @@ rules:
 - apiGroups:
   - ""
   resources:
-  - events
-  verbs:
-  - create
-  - patch
-  - update
-- apiGroups:
-  - ""
-  resources:
   - secrets
   verbs:
   - create
@@ -48,5 +40,13 @@ rules:
   - butaneconfigs/status
   verbs:
   - get
+  - patch
+  - update
+- apiGroups:
+  - events.k8s.io
+  resources:
+  - events
+  verbs:
+  - create
   - patch
   - update

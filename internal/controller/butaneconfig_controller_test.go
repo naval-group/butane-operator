@@ -26,7 +26,7 @@ import (
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
-	"k8s.io/client-go/tools/record"
+	"k8s.io/client-go/tools/events"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
@@ -102,7 +102,7 @@ var _ = Describe("ButaneConfig Controller", func() {
 				Client:   k8sClient,
 				Scheme:   k8sClient.Scheme(),
 				Log:      ctrl.Log.WithName("controllers").WithName("ButaneConfig"),
-				Recorder: record.NewFakeRecorder(100),
+				Recorder: events.NewFakeRecorder(100),
 			}
 
 			_, err := controllerReconciler.Reconcile(ctx, reconcile.Request{
@@ -199,7 +199,7 @@ var _ = Describe("ButaneConfig Controller", func() {
 				Client:   k8sClient,
 				Scheme:   k8sClient.Scheme(),
 				Log:      ctrl.Log.WithName("controllers").WithName("ButaneConfig"),
-				Recorder: record.NewFakeRecorder(100),
+				Recorder: events.NewFakeRecorder(100),
 			}
 
 			_, err = controllerReconciler.Reconcile(ctx, reconcile.Request{
@@ -245,7 +245,7 @@ var _ = Describe("ButaneConfig Controller", func() {
 				Client:   k8sClient,
 				Scheme:   k8sClient.Scheme(),
 				Log:      ctrl.Log.WithName("controllers").WithName("ButaneConfig"),
-				Recorder: record.NewFakeRecorder(100),
+				Recorder: events.NewFakeRecorder(100),
 			}
 
 			_, err := controllerReconciler.Reconcile(ctx, reconcile.Request{
