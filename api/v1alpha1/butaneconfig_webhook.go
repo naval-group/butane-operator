@@ -22,7 +22,6 @@ import (
 
 	"github.com/coreos/butane/config"
 	"github.com/coreos/butane/config/common"
-	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/webhook/admission"
@@ -33,25 +32,24 @@ var butaneconfiglog = logf.Log.WithName("butaneconfig-resource")
 
 // SetupWebhookWithManager will setup the manager to manage the webhooks
 func (r *ButaneConfig) SetupWebhookWithManager(mgr ctrl.Manager) error {
-	return ctrl.NewWebhookManagedBy(mgr).
-		For(r).
+	return ctrl.NewWebhookManagedBy(mgr, &ButaneConfig{}).
+		WithValidator(&ButaneConfigCustomValidator{}).
 		Complete()
-}
-
-// Default implements webhook.Defaulter
-func (r *ButaneConfig) Default(ctx context.Context) error {
-	butaneconfiglog.Info("default", "name", r.Name)
-	return nil
 }
 
 //+kubebuilder:webhook:path=/validate-butane-operators-naval-group-com-v1alpha1-butaneconfig,mutating=false,failurePolicy=fail,sideEffects=None,groups=butane.operators.naval-group.com,resources=butaneconfigs,verbs=create;update,versions=v1alpha1,name=validating.butaneconfigs.operators.naval-group.com,admissionReviewVersions=v1
 
+// +kubebuilder:object:generate=false
+
+// ButaneConfigCustomValidator implements admission.Validator[*ButaneConfig]
+type ButaneConfigCustomValidator struct{}
+
 // ValidateCreate implements validation logic for ButaneConfig creation
-func (r *ButaneConfig) ValidateCreate(ctx context.Context) (admission.Warnings, error) {
-	butaneconfiglog.Info("validate create", "name", r.Name)
+func (v *ButaneConfigCustomValidator) ValidateCreate(ctx context.Context, obj *ButaneConfig) (admission.Warnings, error) {
+	butaneconfiglog.Info("validate create", "name", obj.Name)
 
 	// Validate the Butane configuration on creation
-	if err := r.validateButaneConfig(); err != nil {
+	if err := validateButaneConfig(obj); err != nil {
 		return nil, err
 	}
 
@@ -59,11 +57,11 @@ func (r *ButaneConfig) ValidateCreate(ctx context.Context) (admission.Warnings, 
 }
 
 // ValidateUpdate implements validation logic for ButaneConfig updates
-func (r *ButaneConfig) ValidateUpdate(ctx context.Context, old runtime.Object) (admission.Warnings, error) {
-	butaneconfiglog.Info("validate update", "name", r.Name)
+func (v *ButaneConfigCustomValidator) ValidateUpdate(ctx context.Context, oldObj, newObj *ButaneConfig) (admission.Warnings, error) {
+	butaneconfiglog.Info("validate update", "name", newObj.Name)
 
 	// Validate the Butane configuration on update
-	if err := r.validateButaneConfig(); err != nil {
+	if err := validateButaneConfig(newObj); err != nil {
 		return nil, err
 	}
 
@@ -71,14 +69,14 @@ func (r *ButaneConfig) ValidateUpdate(ctx context.Context, old runtime.Object) (
 }
 
 // ValidateDelete implements validation logic for ButaneConfig deletion
-func (r *ButaneConfig) ValidateDelete(ctx context.Context) (admission.Warnings, error) {
-	butaneconfiglog.Info("validate delete", "name", r.Name)
+func (v *ButaneConfigCustomValidator) ValidateDelete(ctx context.Context, obj *ButaneConfig) (admission.Warnings, error) {
+	butaneconfiglog.Info("validate delete", "name", obj.Name)
 	// Optionally implement validation on delete, if necessary
 	return nil, nil
 }
 
 // validateButaneConfig checks if the Butane configuration is valid by attempting to translate it to Ignition
-func (r *ButaneConfig) validateButaneConfig() error {
+func validateButaneConfig(r *ButaneConfig) error {
 	var butane interface{}
 	if err := json.Unmarshal(r.Spec.Config.Raw, &butane); err != nil {
 		return fmt.Errorf("failed to unmarshal Butane config: %v", err)
