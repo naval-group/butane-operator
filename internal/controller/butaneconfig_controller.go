@@ -47,6 +47,8 @@ type ButaneConfigReconciler struct {
 //+kubebuilder:rbac:groups=butane.operators.naval-group.com,resources=butaneconfigs/finalizers,verbs=update
 //+kubebuilder:rbac:groups="",resources=secrets,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:groups=events.k8s.io,resources=events,verbs=create;patch;update
+//+kubebuilder:rbac:groups=admissionregistration.k8s.io,resources=validatingwebhookconfigurations,verbs=get;list;watch;update;patch
+//+kubebuilder:rbac:groups=admissionregistration.k8s.io,resources=mutatingwebhookconfigurations,verbs=get;list;watch;update;patch
 
 func (r *ButaneConfigReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	log := r.Log.WithValues("butaneconfig", req.NamespacedName)
