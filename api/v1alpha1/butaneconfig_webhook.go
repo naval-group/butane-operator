@@ -33,20 +33,8 @@ var butaneconfiglog = logf.Log.WithName("butaneconfig-resource")
 // SetupWebhookWithManager will setup the manager to manage the webhooks
 func (r *ButaneConfig) SetupWebhookWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewWebhookManagedBy(mgr, &ButaneConfig{}).
-		WithDefaulter(&ButaneConfigCustomDefaulter{}).
 		WithValidator(&ButaneConfigCustomValidator{}).
 		Complete()
-}
-
-// +kubebuilder:object:generate=false
-
-// ButaneConfigCustomDefaulter implements admission.Defaulter[*ButaneConfig]
-type ButaneConfigCustomDefaulter struct{}
-
-// Default implements webhook.Defaulter
-func (d *ButaneConfigCustomDefaulter) Default(ctx context.Context, obj *ButaneConfig) error {
-	butaneconfiglog.Info("default", "name", obj.Name)
-	return nil
 }
 
 //+kubebuilder:webhook:path=/validate-butane-operators-naval-group-com-v1alpha1-butaneconfig,mutating=false,failurePolicy=fail,sideEffects=None,groups=butane.operators.naval-group.com,resources=butaneconfigs,verbs=create;update,versions=v1alpha1,name=validating.butaneconfigs.operators.naval-group.com,admissionReviewVersions=v1
