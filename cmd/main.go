@@ -17,9 +17,11 @@ limitations under the License.
 package main
 
 import (
+	"context"
 	"crypto/tls"
 	"flag"
 	"os"
+	"time"
 
 	// Import all Kubernetes client auth plugins (e.g. Azure, GCP, OIDC, etc.)
 	// to ensure that exec-entrypoint and run can make use of them.
@@ -27,6 +29,7 @@ import (
 
 	"k8s.io/apimachinery/pkg/runtime"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
+	"k8s.io/client-go/kubernetes"
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/healthz"
@@ -36,6 +39,7 @@ import (
 
 	butanev1alpha1 "github.com/naval-group/butane-operator/api/v1alpha1"
 	"github.com/naval-group/butane-operator/internal/controller"
+	webhookcerts "github.com/naval-group/butane-operator/pkg/webhook/certs"
 	//+kubebuilder:scaffold:imports
 )
 
@@ -114,7 +118,34 @@ func main() {
 	}
 
 	if os.Getenv("ENABLE_WEBHOOKS") != "false" {
+		certDir := envOrDefault("WEBHOOK_CERT_DIR", "/tmp/k8s-webhook-server/serving-certs")
+
+		// Provision TLS certs before starting the webhook server.
+		// Use a standalone client since the manager's cached client isn't available yet.
+		kubeClient, err := kubernetes.NewForConfig(ctrl.GetConfigOrDie())
+		if err != nil {
+			setupLog.Error(err, "unable to create Kubernetes client for webhook cert provisioning")
+			os.Exit(1)
+		}
+
+		certCfg := webhookcerts.Config{
+			ServiceName:       envOrDefault("WEBHOOK_SERVICE_NAME", "butane-operator-webhook-service"),
+			Namespace:         envOrDefault("POD_NAMESPACE", "butane-operator-system"),
+			SecretName:        envOrDefault("WEBHOOK_SECRET_NAME", "webhook-server-cert"),
+			WebhookConfigName: envOrDefault("WEBHOOK_CONFIG_NAME", "butane-operator-validating-webhook-configuration"),
+			CertDir:           certDir,
+			CertValidity:      365 * 24 * time.Hour,
+			RenewalThreshold:  30 * 24 * time.Hour,
+		}
+
+		ctx := context.Background()
+		if err := webhookcerts.Ensure(ctx, kubeClient, certCfg, setupLog); err != nil {
+			setupLog.Error(err, "unable to provision webhook certificates")
+			os.Exit(1)
+		}
+
 		webhookServer := webhook.NewServer(webhook.Options{
+			CertDir: certDir,
 			TLSOpts: tlsOpts,
 		})
 		mgrOpts.WebhookServer = webhookServer
@@ -155,4 +186,11 @@ func main() {
 		setupLog.Error(err, "problem running manager")
 		os.Exit(1)
 	}
+}
+
+func envOrDefault(key, defaultVal string) string {
+	if v := os.Getenv(key); v != "" {
+		return v
+	}
+	return defaultVal
 }
