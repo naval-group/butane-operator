@@ -97,7 +97,7 @@ jobs:
         fi
 
     - name: Generate SBOM
-      uses: anchore/sbom-action@fbfd9c6c189226748411491745178e0c2017392d # v0.20.10
+      uses: anchore/sbom-action@28d71544de8eaf1b958d335707167c5f783590ad # v0.22.2
       with:
         image: ghcr.io/${{ github.repository }}@${{ steps.image.outputs.digest }}
         output-file: sbom.spdx.json
